@@ -8,5 +8,5 @@ RedsysRuby::Engine.routes.draw do
       get :ko
     end
   end
-  root to: "configurations#edit"
+  root to: "payments#index"
 end

@@ -118,7 +118,7 @@
   <%= form_with model: @configuration, url: configuration_path, method: :patch, local: true do |f| %>
     <div class="redsys-form-group">
       <%= f.label :merchant_key, "Merchant Key (FUC Key)", class: "redsys-label" %>
-      <%= f.text_field :merchant_key, class: "redsys-input", placeholder: "Ej: sq7H5YzEBhyUTLe6BArsth4i..." %>
+      <%= f.password_field :merchant_key, class: "redsys-input", placeholder: "Ej: sq7H5YzEBhyUTLe6BArsth4i...", value: @configuration.merchant_key %>
     </div>
 
     <div class="redsys-form-group">
