@@ -1,0 +1,50 @@
+<style>
+  .redsys-demo-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .redsys-amount {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 20px 0;
+  }
+  .redsys-submit {
+    display: inline-block;
+    padding: 14px 28px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .redsys-submit:hover {
+    background: #1d4ed8;
+  }
+</style>
+
+<div class="redsys-demo-container">
+  <h1>Prueba de Pago</h1>
+  <p>Estás a punto de realizar un pago de prueba con Redsys.</p>
+
+  <div class="redsys-amount">
+    <%= number_to_currency(@amount, unit: "€") %>
+  </div>
+
+  <p>ID de Pedido: <strong><%= @order_id %></strong></p>
+
+  <%= redsys_payment_form(amount: @amount, order: @order_id, description: "Compra de prueba") %>
+
+  <p style="margin-top: 20px; font-size: 12px; color: #666;">
+    Esto te redirigirá al entorno de <%= RedsysRuby::Configuration.load.environment %> de Redsys.
+  </p>
+</div>

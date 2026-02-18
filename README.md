@@ -2,6 +2,8 @@
 
 A Ruby gem for making payments with Redsys using the HMAC-SHA256 signature algorithm.
 
+**Note:** This documentation and some parts of the code use Spanish terms because Redsys is a payment provider that operates in Spain.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,56 +20,58 @@ Or install it yourself as:
 
     $ gem install redsys-ruby
 
-## Usage
+### Rails Integration
 
-### Initializing the TPV
+This gem includes a Rails Engine that provides a configuration interface, payment helpers, and premium success/failure pages.
 
-```ruby
-require 'redsys-ruby'
+#### 1. Mount the Engine
 
-tpv = RedsysRuby::TPV.new(merchant_key: 'your_merchant_key_base64')
-```
-
-### Preparing Payment Data
+Add the following to your `config/routes.rb`:
 
 ```ruby
-params = {
-  Ds_Merchant_Amount: "145", # In cents
-  Ds_Merchant_Order: "0001",
-  Ds_Merchant_MerchantCode: "999008881",
-  Ds_Merchant_Currency: "978",
-  Ds_Merchant_TransactionType: "0",
-  Ds_Merchant_Terminal: "1",
-  Ds_Merchant_MerchantURL: "https://your-domain.com/notifications",
-  Ds_Merchant_UrlOK: "https://your-domain.com/ok",
-  Ds_Merchant_UrlKO: "https://your-domain.com/ko"
-}
-
-payment_data = tpv.payment_data(params)
-# Returns a hash with:
-# :Ds_SignatureVersion
-# :Ds_MerchantParameters
-# :Ds_Signature
+mount RedsysRuby::Engine => "/redsys_ruby"
 ```
 
-### Verifying a Notification
+#### 2. Configuration
 
-```ruby
-merchant_parameters_64 = params[:Ds_MerchantParameters]
-signature = params[:Ds_Signature]
+You can configure your Redsys credentials through the provided UI at `/redsys_ruby/configuration/edit`. This will save a `config/redsys.yml` file in your Rails application.
 
-if tpv.valid_signature?(merchant_parameters_64, signature)
-  decoded_params = tpv.decode_parameters(merchant_parameters_64)
-  # Handle the payment status
-  if decoded_params["Ds_Response"].to_i < 100
-    # Success
-  else
-    # Failure
-  end
-else
-  # Invalid signature
-end
+Alternatively, you can manually create `config/redsys.yml`:
+
+```yaml
+development:
+  merchant_key: "your_merchant_key_base64"
+  merchant_code: "999008881"
+  terminal: "001"
+  environment: "test"
 ```
+
+#### 3. Using the Payment Form Helper
+
+In your views, you can use the `redsys_payment_form` helper to generate a payment form that redirects to Redsys:
+
+```erb
+<%= redsys_payment_form(amount: 10.50, order: "123456789012", description: "Product description") %>
+```
+
+The helper automatically includes:
+- **Ds_SignatureVersion**
+- **Ds_MerchantParameters**
+- **Ds_Signature**
+- **Ds_Merchant_UrlOK**: Points to the built-in premium success page.
+- **Ds_Merchant_UrlKO**: Points to the built-in premium failure page.
+
+### Premium Success & Failure Pages
+
+The gem provides beautifully designed `Ok` and `KO` pages that match modern aesthetics, featuring:
+- Inter typography.
+- Smooth gradients and micro-animations.
+- Responsive design.
+- Backdrop blur effects.
+
+---
+
+### Low-level Ruby Usage (Non-Rails)
 
 ## Development
 
