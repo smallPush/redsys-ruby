@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "redsys_ruby/version"
-require_relative "redsys_ruby/tpv"
+require_relative "redsys-ruby/version"
+require_relative "redsys-ruby/tpv"
 
 module RedsysRuby
   class Error < StandardError; end

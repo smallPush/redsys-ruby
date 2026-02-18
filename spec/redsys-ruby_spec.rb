@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "redsys_ruby"
+require "redsys-ruby"
 
 RSpec.describe RedsysRuby::TPV do
   # A 32-byte key (256 bits), as provided by Redsys

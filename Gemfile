@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in redsys_ruby.gemspec
+# Specify your gem's dependencies in redsys-ruby.gemspec
 gemspec
 
 gem "irb"

@@ -7,7 +7,7 @@ A Ruby gem for making payments with Redsys using the HMAC-SHA256 signature algor
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'redsys_ruby'
+gem 'redsys-ruby'
 ```
 
 And then execute:
@@ -16,14 +16,14 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install redsys_ruby
+    $ gem install redsys-ruby
 
 ## Usage
 
 ### Initializing the TPV
 
 ```ruby
-require 'redsys_ruby'
+require 'redsys-ruby'
 
 tpv = RedsysRuby::TPV.new(merchant_key: 'your_merchant_key_base64')
 ```
@@ -75,4 +75,4 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/google-labs/redsys_ruby.
+Bug reports and pull requests are welcome on GitHub at https://github.com/smallpush/redsys-ruby.
