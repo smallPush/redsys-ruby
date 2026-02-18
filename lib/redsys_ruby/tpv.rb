@@ -1,0 +1,108 @@
+# frozen_string_literal: true
+
+require "openssl"
+require "base64"
+require "json"
+
+module RedsysRuby
+  class TPV
+    PRODUCTION_URL = "https://sis.redsys.es/sis/realizarPago"
+    TEST_URL = "https://sis-t.redsys.es:25443/sis/realizarPago"
+
+    attr_reader :merchant_key
+
+    def initialize(merchant_key:)
+      @merchant_key = merchant_key
+    end
+
+    # Encrypts the order number with the merchant key using 3DES
+    def encrypt_3des(order, key)
+      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
+      cipher.encrypt
+      # Redsys uses 24 bytes for 3DES key. If the key is longer, we take the first 24 bytes.
+      cipher.key = key[0..23]
+      cipher.iv = "\0" * 8
+      cipher.padding = 0
+      
+      # Redsys uses 8-byte blocks. The order must be padded with null bytes if it's not a multiple of 8.
+      # However, Redsys 3DES encryption for the key diversification usually takes the order as is,
+      # but it must be a multiple of 8 bytes for some 3DES implementations.
+      # Looking at the Python code, it uses pyDes.PAD_NORMAL (which is usually PKCS5/7) or null padding?
+      # The Python code had: k = pyDes.triple_des(key, mode=pyDes.CBC, IV=b'\0'*8, pad='\0', padmode=pyDes.PAD_NORMAL)
+      
+      # Wait, DES-EDE3-CBC key length must be 24 bytes.
+      # The decoded merchant key from Redsys is 24 bytes.
+      
+      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
+      cipher.update(padded_order) + cipher.final
+    end
+
+    def generate_merchant_parameters(params)
+      json_params = params.to_json
+      Base64.strict_encode64(json_params)
+    end
+
+    def generate_merchant_signature(order, merchant_parameters_64)
+      # 1. Decode the merchant key
+      decoded_key = Base64.decode64(@merchant_key)
+
+      # 2. Derive the key for this order
+      derived_key = encrypt_3des(order, decoded_key)
+
+      # 3. Calculate HMAC-SHA256
+      digest = OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
+
+      # 4. Base64 encode the result
+      Base64.strict_encode64(digest)
+    end
+
+    def payment_data(params)
+      merchant_parameters_64 = generate_merchant_parameters(params)
+      order = params[:Ds_Merchant_Order] || params["Ds_Merchant_Order"]
+      
+      {
+        Ds_SignatureVersion: "HMAC_SHA256_V1",
+        Ds_MerchantParameters: merchant_parameters_64,
+        Ds_Signature: generate_merchant_signature(order.to_s, merchant_parameters_64)
+      }
+    end
+
+    def generate_merchant_signature_notif(merchant_parameters_64)
+      # For notifications, we need to extract the order from the decoded parameters.
+      # We use decode64 because it's lenient and handles both standard and urlsafe Base64.
+      decoded_params_json = Base64.decode64(merchant_parameters_64)
+      decoded_params = JSON.parse(decoded_params_json)
+      order = decoded_params["Ds_Order"] || decoded_params["Ds_Merchant_Order"]
+      
+      # 1. Decode the merchant key
+      decoded_key = Base64.decode64(@merchant_key)
+
+      # 2. Derive the key for this order
+      derived_key = encrypt_3des(order, decoded_key)
+
+      # 3. Calculate HMAC-SHA256
+      digest = OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
+
+      # 4. Base64 encode the result (urlsafe for notifications)
+      Base64.urlsafe_encode64(digest)
+    end
+
+    def valid_signature?(merchant_parameters_64, signature)
+      expected_signature = generate_merchant_signature_notif(merchant_parameters_64)
+      # We should use a constant-time comparison here for security
+      secure_compare(expected_signature, signature)
+    end
+
+    def decode_parameters(merchant_parameters_64)
+      JSON.parse(Base64.decode64(merchant_parameters_64))
+    end
+
+    private
+
+    def secure_compare(a, b)
+      return false if a.empty? || b.empty? || a.bytesize != b.bytesize
+
+      OpenSSL.fixed_length_secure_compare(a, b)
+    end
+  end
+end
