@@ -2,6 +2,7 @@
 
 require_relative "redsys-ruby/version"
 require_relative "redsys-ruby/tpv"
+require_relative "redsys-ruby/engine" if defined?(Rails)
 
 module RedsysRuby
   class Error < StandardError; end
