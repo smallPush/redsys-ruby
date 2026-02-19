@@ -43,16 +43,7 @@ module RedsysRuby
     end
 
     def generate_merchant_signature(order, merchant_parameters_64)
-      # 1. Decode the merchant key
-      decoded_key = Base64.decode64(@merchant_key)
-
-      # 2. Derive the key for this order
-      derived_key = encrypt_3des(order, decoded_key)
-
-      # 3. Calculate HMAC-SHA256
-      digest = OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
-
-      # 4. Base64 encode the result
+      digest = calculate_digest(order, merchant_parameters_64)
       Base64.strict_encode64(digest)
     end
 
@@ -69,21 +60,10 @@ module RedsysRuby
 
     def generate_merchant_signature_notif(merchant_parameters_64)
       # For notifications, we need to extract the order from the decoded parameters.
-      # We use decode64 because it's lenient and handles both standard and urlsafe Base64.
-      decoded_params_json = Base64.decode64(merchant_parameters_64)
-      decoded_params = JSON.parse(decoded_params_json)
+      decoded_params = decode_parameters(merchant_parameters_64)
       order = decoded_params["Ds_Order"] || decoded_params["Ds_Merchant_Order"]
       
-      # 1. Decode the merchant key
-      decoded_key = Base64.decode64(@merchant_key)
-
-      # 2. Derive the key for this order
-      derived_key = encrypt_3des(order, decoded_key)
-
-      # 3. Calculate HMAC-SHA256
-      digest = OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
-
-      # 4. Base64 encode the result (urlsafe for notifications)
+      digest = calculate_digest(order, merchant_parameters_64)
       Base64.urlsafe_encode64(digest)
     end
 
@@ -98,6 +78,17 @@ module RedsysRuby
     end
 
     private
+
+    def calculate_digest(order, merchant_parameters_64)
+      # 1. Decode the merchant key
+      decoded_key = Base64.decode64(@merchant_key)
+
+      # 2. Derive the key for this order
+      derived_key = encrypt_3des(order, decoded_key)
+
+      # 3. Calculate HMAC-SHA256
+      OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
+    end
 
     def secure_compare(a, b)
       return false if a.empty? || b.empty? || a.bytesize != b.bytesize
