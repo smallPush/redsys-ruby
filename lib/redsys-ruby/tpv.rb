@@ -48,8 +48,9 @@ module RedsysRuby
     end
 
     def payment_data(params)
+      params = params.transform_keys(&:to_s)
       merchant_parameters_64 = generate_merchant_parameters(params)
-      order = params[:Ds_Merchant_Order] || params["Ds_Merchant_Order"]
+      order = params["Ds_Merchant_Order"]
       
       {
         Ds_SignatureVersion: "HMAC_SHA256_V1",
