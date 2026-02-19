@@ -48,6 +48,14 @@ RSpec.describe RedsysRuby::TPV do
         expect(signature).not_to include("+")
         expect(signature).not_to include("/")
       end
+
+      it "raises ArgumentError when order is missing" do
+        params_without_order = { Ds_Response: "0000" }
+        encoded_params_without_order = Base64.urlsafe_encode64(params_without_order.to_json)
+        expect {
+          tpv.generate_merchant_signature_notif(encoded_params_without_order)
+        }.to raise_error(ArgumentError, /Order is missing/)
+      end
     end
 
     describe "#valid_signature?" do
