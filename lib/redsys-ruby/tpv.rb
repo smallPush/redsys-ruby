@@ -15,6 +15,18 @@ module RedsysRuby
       @merchant_key = merchant_key
     end
 
+    def encrypt_3des(order, key)
+      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
+      cipher.encrypt
+      cipher.key = key[0..23]
+      cipher.iv = "\0" * 8
+      cipher.padding = 0
+
+      # Redsys uses 8-byte blocks. The order must be padded with null bytes to a multiple of 8.
+      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
+      cipher.update(padded_order) + cipher.final
+    end
+
     def generate_merchant_parameters(params)
       json_params = params.to_json
       Base64.strict_encode64(json_params)
