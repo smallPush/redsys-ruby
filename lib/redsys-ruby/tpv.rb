@@ -41,6 +41,8 @@ module RedsysRuby
       decoded_params = decode_parameters(merchant_parameters_64)
       order = decoded_params["Ds_Order"] || decoded_params["Ds_Merchant_Order"]
       
+      raise ArgumentError, "Order is missing in merchant parameters" if order.nil?
+
       digest = calculate_digest(order, merchant_parameters_64)
       Base64.urlsafe_encode64(digest)
     end
