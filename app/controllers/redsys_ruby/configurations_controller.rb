@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module RedsysRuby
-  class ConfigurationsController < ActionController::Base
-    layout "application"
+  class ConfigurationsController < ApplicationController
+    before_action :authenticate_configuration!
 
     def edit
       @configuration = Configuration.load
@@ -18,6 +18,12 @@ module RedsysRuby
     end
 
     private
+
+    def authenticate_configuration!
+      if RedsysRuby.before_configuration_action.is_a?(Proc)
+        instance_exec(&RedsysRuby.before_configuration_action)
+      end
+    end
 
     def configuration_params
       params.require(:configuration).permit(:merchant_key, :merchant_code, :terminal, :environment)

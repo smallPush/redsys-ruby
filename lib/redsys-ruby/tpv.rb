@@ -15,14 +15,11 @@ module RedsysRuby
       @merchant_key = merchant_key
     end
 
-    # Encrypts the order number with the merchant key using 3DES
     def encrypt_3des(order, key)
       cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
       cipher.encrypt
-      # DES-EDE3-CBC requires a 24-byte key. Redsys uses the first 24 bytes of the decoded merchant key.
       cipher.key = key[0..23]
       cipher.iv = "\0" * 8
-      # We disable OpenSSL's internal padding because Redsys uses null padding.
       cipher.padding = 0
 
       # Redsys uses 8-byte blocks. The order must be padded with null bytes to a multiple of 8.
@@ -41,8 +38,9 @@ module RedsysRuby
     end
 
     def payment_data(params)
+      params = params.transform_keys(&:to_s)
       merchant_parameters_64 = generate_merchant_parameters(params)
-      order = params[:Ds_Merchant_Order] || params["Ds_Merchant_Order"]
+      order = params["Ds_Merchant_Order"]
       
       {
         Ds_SignatureVersion: "HMAC_SHA256_V1",
@@ -56,6 +54,8 @@ module RedsysRuby
       decoded_params = decode_parameters(merchant_parameters_64)
       order = decoded_params["Ds_Order"] || decoded_params["Ds_Merchant_Order"]
       
+      raise ArgumentError, "Order is missing in merchant parameters" if order.nil?
+
       digest = calculate_digest(order, merchant_parameters_64)
       Base64.urlsafe_encode64(digest)
     end
@@ -71,6 +71,18 @@ module RedsysRuby
     end
 
     private
+
+    # Encrypts the order number with the merchant key using 3DES
+    def encrypt_3des(order, key)
+      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
+      cipher.encrypt
+      cipher.key = key[0..23]
+      cipher.iv = "\0" * 8
+      cipher.padding = 0
+
+      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
+      cipher.update(padded_order) + cipher.final
+    end
 
     def calculate_digest(order, merchant_parameters_64)
       # 1. Decode the merchant key
