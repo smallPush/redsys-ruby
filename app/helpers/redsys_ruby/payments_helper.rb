@@ -6,7 +6,7 @@ module RedsysRuby
       config = Configuration.load
       tpv = TPV.new(merchant_key: config.merchant_key)
 
-      order ||= rand(10000..99999).to_s
+      order ||= SecureRandom.random_number(10**12).to_s.rjust(12, "0")
 
       params = {
         Ds_Merchant_Amount: (amount.to_f * 100).to_i.to_s,
