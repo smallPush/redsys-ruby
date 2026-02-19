@@ -25,10 +25,29 @@
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
   }
   .redsys-submit:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+  .redsys-submit:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .redsys-submit:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+  .redsys-secure-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    color: #059669;
+    font-size: 14px;
+    font-weight: 500;
   }
 </style>
 
@@ -36,7 +55,7 @@
   <h1>Prueba de Pago</h1>
   <p>Estás a punto de realizar un pago de prueba con Redsys.</p>
 
-  <div class="redsys-amount">
+  <div class="redsys-amount" aria-label="Importe a pagar: <%= number_to_currency(@amount, unit: '€') %>">
     <%= number_to_currency(@amount, unit: "€") %>
   </div>
 
@@ -44,7 +63,15 @@
 
   <%= redsys_payment_form(amount: @amount, order: @order_id, description: "Compra de prueba") %>
 
-  <p style="margin-top: 20px; font-size: 12px; color: #666;">
-    Esto te redirigirá al entorno de <%= RedsysRuby::Configuration.load.environment %> de Redsys.
+  <div class="redsys-secure-notice">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+    <span>Pago 100% Seguro</span>
+  </div>
+
+  <p style="margin-top: 24px; font-size: 13px; color: #64748b; line-height: 1.5;">
+    Al hacer clic, serás redirigido de forma segura al entorno de <strong><%= RedsysRuby::Configuration.load.environment %></strong> de Redsys para completar tu transacción.
   </p>
 </div>
