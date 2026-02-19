@@ -9,7 +9,7 @@ module RedsysRuby
       order ||= rand(10000..99999).to_s
 
       params = {
-        Ds_Merchant_Amount: (amount.to_f * 100).to_i.to_s,
+        Ds_Merchant_Amount: (amount.to_d * 100).to_i.to_s,
         Ds_Merchant_Order: order.to_s,
         Ds_Merchant_MerchantCode: config.merchant_code,
         Ds_Merchant_Currency: "978", # EUR
