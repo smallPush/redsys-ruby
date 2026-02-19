@@ -19,20 +19,13 @@ module RedsysRuby
     def encrypt_3des(order, key)
       cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
       cipher.encrypt
-      # Redsys uses 24 bytes for 3DES key. If the key is longer, we take the first 24 bytes.
+      # DES-EDE3-CBC requires a 24-byte key. Redsys uses the first 24 bytes of the decoded merchant key.
       cipher.key = key[0..23]
       cipher.iv = "\0" * 8
+      # We disable OpenSSL's internal padding because Redsys uses null padding.
       cipher.padding = 0
-      
-      # Redsys uses 8-byte blocks. The order must be padded with null bytes if it's not a multiple of 8.
-      # However, Redsys 3DES encryption for the key diversification usually takes the order as is,
-      # but it must be a multiple of 8 bytes for some 3DES implementations.
-      # Looking at the Python code, it uses pyDes.PAD_NORMAL (which is usually PKCS5/7) or null padding?
-      # The Python code had: k = pyDes.triple_des(key, mode=pyDes.CBC, IV=b'\0'*8, pad='\0', padmode=pyDes.PAD_NORMAL)
-      
-      # Wait, DES-EDE3-CBC key length must be 24 bytes.
-      # The decoded merchant key from Redsys is 24 bytes.
-      
+
+      # Redsys uses 8-byte blocks. The order must be padded with null bytes to a multiple of 8.
       padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
       cipher.update(padded_order) + cipher.final
     end
