@@ -17,3 +17,8 @@
 **Vulnerability:** The gem used Ruby's insecure `rand` method with a small range (5 digits) to generate default order IDs, leading to high collision risk and lack of cryptographic security.
 **Learning:** For identifiers in payment systems, cryptographically secure random number generators (like `SecureRandom`) should be used, and the range should be maximized to prevent collisions.
 **Prevention:** Use `SecureRandom` instead of `rand` and utilize the full length allowed by the payment gateway (12 digits for Redsys) to ensure uniqueness and security.
+
+## 2026-02-19 - [Sensitive Data Exposure in View]
+**Vulnerability:** Rendering sensitive secrets in the 'value' attribute of a password input field allowed the cleartext secret to be retrieved from the page source.
+**Learning:** Even when using `password_field`, Rails may render the `value` attribute if explicitly provided, exposing the secret in the HTML source. Sensitive fields should never have their values pre-filled in the HTML.
+**Prevention:** Remove the `value` attribute from sensitive input fields to ensure they remain empty in the rendered HTML, relying on user input for updates.
