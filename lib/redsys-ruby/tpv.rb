@@ -15,28 +15,6 @@ module RedsysRuby
       @merchant_key = merchant_key
     end
 
-    # Encrypts the order number with the merchant key using 3DES
-    def encrypt_3des(order, key)
-      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
-      cipher.encrypt
-      # Redsys uses 24 bytes for 3DES key. If the key is longer, we take the first 24 bytes.
-      cipher.key = key[0..23]
-      cipher.iv = "\0" * 8
-      cipher.padding = 0
-      
-      # Redsys uses 8-byte blocks. The order must be padded with null bytes if it's not a multiple of 8.
-      # However, Redsys 3DES encryption for the key diversification usually takes the order as is,
-      # but it must be a multiple of 8 bytes for some 3DES implementations.
-      # Looking at the Python code, it uses pyDes.PAD_NORMAL (which is usually PKCS5/7) or null padding?
-      # The Python code had: k = pyDes.triple_des(key, mode=pyDes.CBC, IV=b'\0'*8, pad='\0', padmode=pyDes.PAD_NORMAL)
-      
-      # Wait, DES-EDE3-CBC key length must be 24 bytes.
-      # The decoded merchant key from Redsys is 24 bytes.
-      
-      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
-      cipher.update(padded_order) + cipher.final
-    end
-
     def generate_merchant_parameters(params)
       json_params = params.to_json
       Base64.strict_encode64(json_params)
@@ -78,6 +56,28 @@ module RedsysRuby
     end
 
     private
+
+    # Encrypts the order number with the merchant key using 3DES
+    def encrypt_3des(order, key)
+      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
+      cipher.encrypt
+      # Redsys uses 24 bytes for 3DES key. If the key is longer, we take the first 24 bytes.
+      cipher.key = key[0..23]
+      cipher.iv = "\0" * 8
+      cipher.padding = 0
+
+      # Redsys uses 8-byte blocks. The order must be padded with null bytes if it's not a multiple of 8.
+      # However, Redsys 3DES encryption for the key diversification usually takes the order as is,
+      # but it must be a multiple of 8 bytes for some 3DES implementations.
+      # Looking at the Python code, it uses pyDes.PAD_NORMAL (which is usually PKCS5/7) or null padding?
+      # The Python code had: k = pyDes.triple_des(key, mode=pyDes.CBC, IV=b'\0'*8, pad='\0', padmode=pyDes.PAD_NORMAL)
+
+      # Wait, DES-EDE3-CBC key length must be 24 bytes.
+      # The decoded merchant key from Redsys is 24 bytes.
+
+      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
+      cipher.update(padded_order) + cipher.final
+    end
 
     def calculate_digest(order, merchant_parameters_64)
       # 1. Decode the merchant key
