@@ -29,7 +29,10 @@ module RedsysRuby
         concat f.hidden_field :Ds_SignatureVersion, value: payment_data[:Ds_SignatureVersion]
         concat f.hidden_field :Ds_MerchantParameters, value: payment_data[:Ds_MerchantParameters]
         concat f.hidden_field :Ds_Signature, value: payment_data[:Ds_Signature]
-        concat f.submit button_text, class: button_class
+        concat f.submit button_text,
+                     class: button_class,
+                     aria: { label: "#{button_text} - Redirigir a pasarela de pago segura" },
+                     data: { disable_with: "Procesando..." }
       end
     end
   end
