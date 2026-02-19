@@ -15,12 +15,23 @@ module RedsysRuby
     CONFIG_PATH = Rails.root.join("config", "redsys.yml")
 
     def self.load
+      config = {}
       if File.exist?(CONFIG_PATH)
-        config = YAML.safe_load_file(CONFIG_PATH, aliases: true)[Rails.env] || {}
-        new(config)
-      else
-        new(environment: "test", terminal: "001")
+        config = (YAML.safe_load_file(CONFIG_PATH, aliases: true) || {})[Rails.env] || {}
       end
+
+      creds = Rails.application.credentials.redsys rescue {}
+
+      new(
+        merchant_key: ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"],
+        merchant_code: ENV["REDSYS_MERCHANT_CODE"] || creds[:merchant_code] || config["merchant_code"],
+        terminal: ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"],
+        environment: ENV["REDSYS_ENVIRONMENT"] || creds[:environment] || config["environment"] || "test"
+      )
+    end
+
+    def merchant_key_from_secure_source?
+      ENV["REDSYS_MERCHANT_KEY"].present? || (Rails.application.credentials.redsys&.dig(:merchant_key).present? rescue false)
     end
 
     def save
@@ -31,7 +42,11 @@ module RedsysRuby
         config_data = YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
       end
 
-      config_data[Rails.env] = attributes
+      # We exclude merchant_key from the YAML file for security reasons.
+      # Secrets should be managed via environment variables or encrypted credentials.
+      data_to_save = attributes.except("merchant_key")
+
+      config_data[Rails.env] = data_to_save
       File.write(CONFIG_PATH, config_data.to_yaml)
       true
     end

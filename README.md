@@ -34,17 +34,33 @@ mount RedsysRuby::Engine => "/redsys_ruby"
 
 #### 2. Configuration
 
-You can configure your Redsys credentials through the provided UI at `/redsys_ruby/configuration/edit`. This will save a `config/redsys.yml` file in your Rails application.
+For security, it is highly recommended to manage your secrets (like `merchant_key`) using **environment variables** or **Rails encrypted credentials**.
 
-Alternatively, you can manually create `config/redsys.yml`:
+##### Using Environment Variables (Recommended)
+
+Set the following environment variables in your system or using a gem like `dotenv`:
+
+* `REDSYS_MERCHANT_KEY`: Your 256-bit merchant key (Base64 encoded).
+* `REDSYS_MERCHANT_CODE`: Your 9-digit merchant code (FUC).
+* `REDSYS_TERMINAL`: Your 3-digit terminal number.
+* `REDSYS_ENVIRONMENT`: `test` or `production`.
+
+##### Using Rails Credentials
+
+You can also add these values to your encrypted credentials:
 
 ```yaml
-development:
+# bin/rails credentials:edit
+redsys:
   merchant_key: "your_merchant_key_base64"
   merchant_code: "999008881"
   terminal: "001"
   environment: "test"
 ```
+
+##### Using the Configuration UI
+
+Alternatively, you can configure non-sensitive settings through the provided UI at `/redsys_ruby/configuration/edit`. Note that for security reasons, the `merchant_key` will **not** be saved to the `config/redsys.yml` file and should be provided via one of the methods above.
 
 #### 3. Using the Payment Form Helper
 
