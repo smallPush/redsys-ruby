@@ -62,6 +62,24 @@ redsys:
 
 Alternatively, you can configure non-sensitive settings through the provided UI at `/redsys_ruby/configuration/edit`. Note that for security reasons, the `merchant_key` will **not** be saved to the `config/redsys.yml` file and should be provided via one of the methods above.
 
+**Security Note:** By default, the configuration UI is unauthenticated. You should secure it by configuring an authentication method in an initializer:
+
+```ruby
+# config/initializers/redsys.rb
+RedsysRuby.configure do |config|
+  # Specify the parent controller for the engine (default: "ActionController::Base")
+  # Use your application's base controller to inherit its authentication and layout
+  config.parent_controller = "ApplicationController"
+
+  # Or provide a custom authentication block
+  config.before_configuration_action = -> {
+    # e.g., using Devise:
+    # authenticate_user!
+    # redirect_to root_path unless current_user.admin?
+  }
+end
+```
+
 #### 3. Using the Payment Form Helper
 
 In your views, you can use the `redsys_payment_form` helper to generate a payment form that redirects to Redsys:
