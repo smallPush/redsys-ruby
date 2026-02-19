@@ -5,16 +5,17 @@ require_relative "lib/redsys-ruby/version"
 Gem::Specification.new do |spec|
   spec.name = "redsys-ruby"
   spec.version = RedsysRuby::VERSION
-  spec.authors = ["google-labs-jules[bot]"]
-  spec.email = ["161369871+google-labs-jules[bot]@users.noreply.github.com"]
+  spec.authors = ["smallPush"]
+  spec.email = ["[EMAIL_ADDRESS]"]
 
   spec.summary = "A Ruby gem for making payments with Redsys."
   spec.description = "Implement Redsys HMAC SHA256 signature and payment parameters handling."
-  spec.homepage = "https://github.com/google-labs/redsys-ruby"
+  spec.homepage = "https://github.com/smallPush/redsys-ruby"
+  spec.license = "CC-BY-4.0"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/google-labs/redsys-ruby"
+  spec.metadata["source_code_uri"] = "https://github.com/smallPush/redsys-ruby"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
