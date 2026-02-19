@@ -22,11 +22,23 @@ module RedsysRuby
 
       creds = (Rails.application.credentials.redsys rescue {}) || {}
 
+      env = ENV["REDSYS_ENVIRONMENT"] || creds[:environment] || config["environment"] || "test"
+
+      key = ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"]
+      code = ENV["REDSYS_MERCHANT_CODE"] || creds[:merchant_code] || config["merchant_code"]
+      term = ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"]
+
+      if env == "test"
+        key ||= "sq7HjmUOBfKmC576ILgskD5srU870gJ7"
+        code ||= "999008881"
+        term ||= "001"
+      end
+
       new(
-        merchant_key: ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"],
-        merchant_code: ENV["REDSYS_MERCHANT_CODE"] || creds[:merchant_code] || config["merchant_code"],
-        terminal: ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"],
-        environment: ENV["REDSYS_ENVIRONMENT"] || creds[:environment] || config["environment"] || "test"
+        merchant_key: key,
+        merchant_code: code,
+        terminal: term,
+        environment: env
       )
     end
 

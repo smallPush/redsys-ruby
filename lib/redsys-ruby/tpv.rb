@@ -12,6 +12,7 @@ module RedsysRuby
     attr_reader :merchant_key
 
     def initialize(merchant_key:)
+      raise ArgumentError, "merchant_key is required" if merchant_key.nil? || merchant_key.to_s.strip.empty?
       @merchant_key = merchant_key
     end
 

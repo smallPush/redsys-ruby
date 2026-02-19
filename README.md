@@ -32,6 +32,17 @@ Add the following to your `config/routes.rb`:
 mount RedsysRuby::Engine => "/redsys_ruby"
 ```
 
+Once mounted, the engine provides the following routes (assuming it is mounted at `"/redsys_ruby"`):
+
+| Route Helper | HTTP Method | Path | Description |
+|---|---|---|---|
+| `redsys_ruby.root_path` | `GET` | `/redsys_ruby` | Payment testing and index page. |
+| `redsys_ruby.payments_path` | `GET` | `/redsys_ruby/payments` | Payment testing and index page. |
+| `redsys_ruby.ok_payments_path` | `GET` | `/redsys_ruby/payments/ok` | Premium success page (UrlOK). |
+| `redsys_ruby.ko_payments_path` | `GET` | `/redsys_ruby/payments/ko` | Premium failure page (UrlKO). |
+| `redsys_ruby.edit_configuration_path` | `GET` | `/redsys_ruby/configuration/edit` | Configuration UI. |
+| `redsys_ruby.configuration_path` | `PATCH`/`PUT` | `/redsys_ruby/configuration` | Update configuration. |
+
 #### 2. Configuration
 
 For security, it is highly recommended to manage your secrets (like `merchant_key`) using **environment variables** or **Rails encrypted credentials**.
@@ -102,6 +113,8 @@ The gem provides beautifully designed `Ok` and `KO` pages that match modern aest
 - Smooth gradients and micro-animations.
 - Responsive design.
 - Backdrop blur effects.
+
+![Redsys Payment Page](doc/img/redsys_payment.png)
 
 ---
 
