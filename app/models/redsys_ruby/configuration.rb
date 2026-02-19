@@ -20,7 +20,7 @@ module RedsysRuby
         config = (YAML.safe_load_file(CONFIG_PATH, aliases: true) || {})[Rails.env] || {}
       end
 
-      creds = Rails.application.credentials.redsys rescue {}
+      creds = (Rails.application.credentials.redsys rescue {}) || {}
 
       new(
         merchant_key: ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"],
