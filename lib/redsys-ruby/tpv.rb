@@ -93,7 +93,7 @@ module RedsysRuby
       derived_key = encrypt_3des(order, decoded_key)
 
       # 3. Calculate HMAC-SHA256
-      OpenSSL::HMAC.digest(OpenSSL::Digest.new("sha256"), derived_key, merchant_parameters_64)
+      OpenSSL::HMAC.digest("SHA256", derived_key, merchant_parameters_64)
     end
 
     def secure_compare(a, b)
