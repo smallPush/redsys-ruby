@@ -7,7 +7,6 @@ require_relative "redsys-ruby/engine" if defined?(Rails)
 
 module RedsysRuby
   class Error < StandardError; end
-
   class << self
     def configure
       yield self
