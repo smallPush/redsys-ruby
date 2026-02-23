@@ -26,7 +26,7 @@ module RedsysRuby
     end
 
     def configuration_params
-      params.require(:configuration).permit(:merchant_key, :merchant_code, :terminal, :environment)
+      params.require(:configuration).permit(:merchant_key, :merchant_code, :terminal, :environment, :merchant_url)
     end
   end
 end
