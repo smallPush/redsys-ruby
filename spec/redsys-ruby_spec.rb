@@ -10,7 +10,7 @@ RSpec.describe RedsysRuby::TPV do
   describe "#generate_merchant_parameters" do
     it "encodes parameters to Base64" do
       params = { Ds_Merchant_Amount: "145", Ds_Merchant_Order: "1" }
-      encoded = tpv.generate_merchant_parameters(params)
+      encoded = tpv.send(:generate_merchant_parameters, params)
       expect(encoded).to eq(Base64.strict_encode64(params.to_json))
     end
   end
@@ -18,8 +18,8 @@ RSpec.describe RedsysRuby::TPV do
   describe "#generate_merchant_signature" do
     it "generates a signature" do
       params = { Ds_Merchant_Amount: "145", Ds_Merchant_Order: "1" }
-      encoded_params = tpv.generate_merchant_parameters(params)
-      signature = tpv.generate_merchant_signature("1", encoded_params)
+      encoded_params = tpv.send(:generate_merchant_parameters, params)
+      signature = tpv.send(:generate_merchant_signature, "1", encoded_params)
       expect(signature).to be_a(String)
       expect(signature).not_to be_empty
     end
@@ -39,7 +39,7 @@ RSpec.describe RedsysRuby::TPV do
   describe "notification handling" do
     let(:params) { { Ds_Order: "1", Ds_Response: "0000" } }
     let(:encoded_params) { Base64.urlsafe_encode64(params.to_json) }
-    let(:signature) { tpv.generate_merchant_signature_notif(encoded_params) }
+    let(:signature) { tpv.send(:generate_merchant_signature_notif, encoded_params) }
 
     describe "#generate_merchant_signature_notif" do
       it "generates a urlsafe signature" do
@@ -53,7 +53,7 @@ RSpec.describe RedsysRuby::TPV do
         params_without_order = { Ds_Response: "0000" }
         encoded_params_without_order = Base64.urlsafe_encode64(params_without_order.to_json)
         expect {
-          tpv.generate_merchant_signature_notif(encoded_params_without_order)
+          tpv.send(:generate_merchant_signature_notif, encoded_params_without_order)
         }.to raise_error(ArgumentError, /Order is missing/)
       end
     end
@@ -70,7 +70,7 @@ RSpec.describe RedsysRuby::TPV do
 
     describe "#decode_parameters" do
       it "decodes the parameters" do
-        decoded = tpv.decode_parameters(encoded_params)
+        decoded = tpv.send(:decode_parameters, encoded_params)
         expect(decoded).to eq(params.transform_keys(&:to_s))
       end
     end
