@@ -16,17 +16,25 @@ module RedsysRuby
       @merchant_key = merchant_key
     end
 
-    def encrypt_3des(order, key)
-      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
-      cipher.encrypt
-      cipher.key = key[0..23]
-      cipher.iv = "\0" * 8
-      cipher.padding = 0
+    def payment_data(params)
+      params = params.transform_keys(&:to_s)
+      merchant_parameters_64 = generate_merchant_parameters(params)
+      order = params["Ds_Merchant_Order"]
 
-      # Redsys uses 8-byte blocks. The order must be padded with null bytes to a multiple of 8.
-      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
-      cipher.update(padded_order) + cipher.final
+      {
+        Ds_SignatureVersion: "HMAC_SHA256_V1",
+        Ds_MerchantParameters: merchant_parameters_64,
+        Ds_Signature: generate_merchant_signature(order.to_s, merchant_parameters_64)
+      }
     end
+
+    def valid_signature?(merchant_parameters_64, signature)
+      expected_signature = generate_merchant_signature_notif(merchant_parameters_64)
+      # We should use a constant-time comparison here for security
+      secure_compare(expected_signature, signature)
+    end
+
+    private
 
     def generate_merchant_parameters(params)
       json_params = params.to_json
@@ -38,40 +46,20 @@ module RedsysRuby
       Base64.strict_encode64(digest)
     end
 
-    def payment_data(params)
-      params = params.transform_keys(&:to_s)
-      merchant_parameters_64 = generate_merchant_parameters(params)
-      order = params["Ds_Merchant_Order"]
-      
-      {
-        Ds_SignatureVersion: "HMAC_SHA256_V1",
-        Ds_MerchantParameters: merchant_parameters_64,
-        Ds_Signature: generate_merchant_signature(order.to_s, merchant_parameters_64)
-      }
-    end
-
     def generate_merchant_signature_notif(merchant_parameters_64)
       # For notifications, we need to extract the order from the decoded parameters.
       decoded_params = decode_parameters(merchant_parameters_64)
       order = decoded_params["Ds_Order"] || decoded_params["Ds_Merchant_Order"]
-      
+
       raise ArgumentError, "Order is missing in merchant parameters" if order.nil?
 
       digest = calculate_digest(order, merchant_parameters_64)
       Base64.urlsafe_encode64(digest)
     end
 
-    def valid_signature?(merchant_parameters_64, signature)
-      expected_signature = generate_merchant_signature_notif(merchant_parameters_64)
-      # We should use a constant-time comparison here for security
-      secure_compare(expected_signature, signature)
-    end
-
     def decode_parameters(merchant_parameters_64)
       JSON.parse(Base64.decode64(merchant_parameters_64))
     end
-
-    private
 
     # Encrypts the order number with the merchant key using 3DES
     def encrypt_3des(order, key)
