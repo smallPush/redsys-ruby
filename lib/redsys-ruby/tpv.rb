@@ -57,9 +57,11 @@ module RedsysRuby
     end
 
     def payment_data(params)
-      merchant_parameters_64 = generate_merchant_parameters(params)
       order = params[:Ds_Merchant_Order] || params["Ds_Merchant_Order"]
-      
+      raise ArgumentError, "Ds_Merchant_Order is required" if order.to_s.empty?
+
+      merchant_parameters_64 = generate_merchant_parameters(params)
+
       {
         Ds_SignatureVersion: "HMAC_SHA256_V1",
         Ds_MerchantParameters: merchant_parameters_64,

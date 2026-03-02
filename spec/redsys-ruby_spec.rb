@@ -34,6 +34,16 @@ RSpec.describe RedsysRuby::TPV do
       expect(data).to have_key(:Ds_Signature)
       expect(data[:Ds_SignatureVersion]).to eq("HMAC_SHA256_V1")
     end
+
+    it "raises ArgumentError if Ds_Merchant_Order is missing" do
+      params = { Ds_Merchant_Amount: "145" }
+      expect { tpv.payment_data(params) }.to raise_error(ArgumentError, /Ds_Merchant_Order is required/)
+    end
+
+    it "raises ArgumentError if Ds_Merchant_Order is empty" do
+      params = { Ds_Merchant_Amount: "145", Ds_Merchant_Order: "" }
+      expect { tpv.payment_data(params) }.to raise_error(ArgumentError, /Ds_Merchant_Order is required/)
+    end
   end
 
   describe "notification handling" do
