@@ -14,6 +14,7 @@ module RedsysRuby
     def initialize(merchant_key:)
       raise ArgumentError, "merchant_key is required" if merchant_key.nil? || merchant_key.to_s.strip.empty?
       @merchant_key = merchant_key
+      @decoded_key = Base64.decode64(@merchant_key)
     end
 
     def encrypt_3des(order, key)
@@ -73,24 +74,10 @@ module RedsysRuby
 
     private
 
-    # Encrypts the order number with the merchant key using 3DES
-    def encrypt_3des(order, key)
-      cipher = OpenSSL::Cipher.new("DES-EDE3-CBC")
-      cipher.encrypt
-      cipher.key = key[0..23]
-      cipher.iv = "\0" * 8
-      cipher.padding = 0
-
-      padded_order = order.ljust((order.length + 7) / 8 * 8, "\0")
-      cipher.update(padded_order) + cipher.final
-    end
-
     def calculate_digest(order, merchant_parameters_64)
-      # 1. Decode the merchant key
-      decoded_key = Base64.decode64(@merchant_key)
-
+      # 1. Use the pre-decoded merchant key
       # 2. Derive the key for this order
-      derived_key = encrypt_3des(order, decoded_key)
+      derived_key = encrypt_3des(order, @decoded_key)
 
       # 3. Calculate HMAC-SHA256
       OpenSSL::HMAC.digest("SHA256", derived_key, merchant_parameters_64)
