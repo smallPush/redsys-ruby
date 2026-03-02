@@ -15,10 +15,7 @@ module RedsysRuby
     CONFIG_PATH = Rails.root.join("config", "redsys.yml")
 
     def self.load
-      config = {}
-      if File.exist?(CONFIG_PATH)
-        config = (YAML.safe_load_file(CONFIG_PATH, aliases: true) || {})[Rails.env] || {}
-      end
+      config = load_config_file[Rails.env] || {}
 
       creds = (Rails.application.credentials.redsys rescue {}) || {}
 
@@ -49,10 +46,7 @@ module RedsysRuby
     def save
       return false unless valid?
 
-      config_data = {}
-      if File.exist?(CONFIG_PATH)
-        config_data = YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
-      end
+      config_data = self.class.send(:load_config_file)
 
       # We exclude merchant_key from the YAML file for security reasons.
       # Secrets should be managed via environment variables or encrypted credentials.
@@ -71,5 +65,12 @@ module RedsysRuby
         "environment" => environment
       }
     end
+
+    def self.load_config_file
+      return {} unless File.exist?(CONFIG_PATH)
+
+      YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
+    end
+    private_class_method :load_config_file
   end
 end
