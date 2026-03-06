@@ -66,12 +66,20 @@ RSpec.describe RedsysRuby::TPV do
       it "returns false for an invalid signature" do
         expect(tpv.valid_signature?(encoded_params, "invalid")).to be false
       end
+
+      it "returns false for invalid Base64 or JSON input" do
+        expect(tpv.valid_signature?("invalid base64", "signature")).to be false
+      end
     end
 
     describe "#decode_parameters" do
       it "decodes the parameters" do
         decoded = tpv.decode_parameters(encoded_params)
         expect(decoded).to eq(params.transform_keys(&:to_s))
+      end
+
+      it "returns an empty hash for invalid Base64 or JSON input" do
+        expect(tpv.decode_parameters("invalid base64")).to eq({})
       end
     end
   end

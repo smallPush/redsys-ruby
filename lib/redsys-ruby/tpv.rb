@@ -66,10 +66,14 @@ module RedsysRuby
       expected_signature = generate_merchant_signature_notif(merchant_parameters_64)
       # We should use a constant-time comparison here for security
       secure_compare(expected_signature, signature)
+    rescue StandardError
+      false
     end
 
     def decode_parameters(merchant_parameters_64)
       JSON.parse(Base64.decode64(merchant_parameters_64))
+    rescue JSON::ParserError, ArgumentError
+      {}
     end
 
     private
