@@ -8,6 +8,14 @@ RSpec.describe RedsysRuby::TPV do
   let(:merchant_key) { Base64.strict_encode64("a" * 32) }
   let(:tpv) { RedsysRuby::TPV.new(merchant_key: merchant_key) }
 
+  describe "#initialize" do
+    it "raises ArgumentError when merchant_key is missing or empty" do
+      expect { RedsysRuby::TPV.new(merchant_key: nil) }.to raise_error(ArgumentError, "merchant_key is required")
+      expect { RedsysRuby::TPV.new(merchant_key: "") }.to raise_error(ArgumentError, "merchant_key is required")
+      expect { RedsysRuby::TPV.new(merchant_key: "   ") }.to raise_error(ArgumentError, "merchant_key is required")
+    end
+  end
+
   describe "#encrypt_3des" do
     let(:merchant_key) { "sq7HjrUOBfKmC576ILgskD5srU870gJ7" }
     let(:decoded_key) { Base64.decode64(merchant_key) }
