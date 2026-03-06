@@ -38,8 +38,12 @@ RSpec.describe RedsysRuby do
       expect(RedsysRuby.parent_controller).to eq("ActionController::Base")
     end
 
-    it "has a nil default before_configuration_action" do
-      expect(RedsysRuby.before_configuration_action).to be_nil
+    it "has a safe default before_configuration_action" do
+      expect(RedsysRuby.before_configuration_action).to be_a(Proc)
+      expect { RedsysRuby.before_configuration_action.call }.to raise_error(
+        RedsysRuby::Error,
+        "Access denied. Please configure RedsysRuby.before_configuration_action."
+      )
     end
   end
 end

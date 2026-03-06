@@ -18,5 +18,5 @@ module RedsysRuby
 
   # Set defaults
   self.parent_controller = "ActionController::Base"
-  self.before_configuration_action = nil
+  self.before_configuration_action = -> { raise RedsysRuby::Error, "Access denied. Please configure RedsysRuby.before_configuration_action." }
 end
