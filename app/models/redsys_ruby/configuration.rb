@@ -17,7 +17,11 @@ module RedsysRuby
     def self.load
       config = load_config_file[Rails.env] || {}
 
-      creds = (Rails.application.credentials.redsys rescue {}) || {}
+      creds = begin
+        Rails.application.credentials.redsys || {}
+      rescue StandardError
+        {}
+      end
 
       env = ENV["REDSYS_ENVIRONMENT"] || creds[:environment] || config["environment"] || "test"
 
@@ -40,7 +44,13 @@ module RedsysRuby
     end
 
     def merchant_key_from_secure_source?
-      ENV["REDSYS_MERCHANT_KEY"].present? || (Rails.application.credentials.redsys&.dig(:merchant_key).present? rescue false)
+      return true if ENV["REDSYS_MERCHANT_KEY"].present?
+
+      begin
+        Rails.application.credentials.redsys&.dig(:merchant_key).present?
+      rescue StandardError
+        false
+      end
     end
 
     def save
