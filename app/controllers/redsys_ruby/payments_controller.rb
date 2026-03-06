@@ -3,7 +3,7 @@
 module RedsysRuby
   class PaymentsController < ApplicationController
     def index
-      @order_id = Time.now.to_i.to_s[-12..-1] # Redsys order must be max 12 chars
+      @order_id = SecureRandom.random_number(10**12).to_s.rjust(12, "0")
       @amount = 10.50
     end
 
