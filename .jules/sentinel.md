@@ -22,3 +22,8 @@
 **Vulnerability:** Rendering sensitive secrets in the 'value' attribute of a password input field allowed the cleartext secret to be retrieved from the page source.
 **Learning:** Even when using `password_field`, Rails may render the `value` attribute if explicitly provided, exposing the secret in the HTML source. Sensitive fields should never have their values pre-filled in the HTML.
 **Prevention:** Remove the `value` attribute from sensitive input fields to ensure they remain empty in the rendered HTML, relying on user input for updates.
+
+## 2026-03-05 - [Unhandled Exception on Invalid Base64/JSON Input]
+**Vulnerability:** Malformed Base64 or JSON input in Redsys notification parameters could cause unhandled exceptions (`JSON::ParserError`, `ArgumentError`), potentially leading to application crashes or Denial-of-Service (DoS).
+**Learning:** External data from webhooks or notifications must be treated as untrusted and parsed within safe boundaries (rescue blocks) to ensure application stability.
+**Prevention:** Wrap parsing logic for external inputs in `begin/rescue` blocks and provide safe fallback values (e.g., empty hash or `false` for validations).
