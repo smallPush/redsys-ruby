@@ -1,11 +1,33 @@
 # frozen_string_literal: true
 
+require "spec_helper"
 require "redsys-ruby"
 
 RSpec.describe RedsysRuby::TPV do
   # A 32-byte key (256 bits), as provided by Redsys
   let(:merchant_key) { Base64.strict_encode64("a" * 32) }
   let(:tpv) { RedsysRuby::TPV.new(merchant_key: merchant_key) }
+
+  describe "#encrypt_3des" do
+    let(:merchant_key) { "sq7HjrUOBfKmC576ILgskD5srU870gJ7" }
+    let(:decoded_key) { Base64.decode64(merchant_key) }
+    let(:order) { "140181510845" }
+    let(:expected_derived_key_64) { "S/VinFar4wSYjr3RDeU00Q==" }
+
+    it "correctly encrypts the order using DES-EDE3-CBC" do
+      encrypted = tpv.encrypt_3des(order, decoded_key)
+      expect(Base64.strict_encode64(encrypted)).to eq(expected_derived_key_64)
+    end
+
+    it "pads the order to a multiple of 8 bytes" do
+      # "123" is 3 bytes, should be padded to 8 bytes with nulls
+      # We can't easily see the padded order as it's internal, but we can verify the result length
+      # 3DES output length is always multiple of 8 (since padding=0 and we manually pad to 8)
+      expect(tpv.encrypt_3des("123", decoded_key).bytesize).to eq(8)
+      expect(tpv.encrypt_3des("12345678", decoded_key).bytesize).to eq(8)
+      expect(tpv.encrypt_3des("123456789", decoded_key).bytesize).to eq(16)
+    end
+  end
 
   describe "#generate_merchant_parameters" do
     it "encodes parameters to Base64" do
