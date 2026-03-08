@@ -22,3 +22,7 @@
 **Vulnerability:** Rendering sensitive secrets in the 'value' attribute of a password input field allowed the cleartext secret to be retrieved from the page source.
 **Learning:** Even when using `password_field`, Rails may render the `value` attribute if explicitly provided, exposing the secret in the HTML source. Sensitive fields should never have their values pre-filled in the HTML.
 **Prevention:** Remove the `value` attribute from sensitive input fields to ensure they remain empty in the rendered HTML, relying on user input for updates.
+## 2026-02-20 - [Missing Notification URL Support]
+**Vulnerability:** The payment integration lacked support for a server-to-server notification URL (Ds_Merchant_MerchantURL), forcing reliance on client-side browser redirects for payment status updates, which can be manipulated or missed.
+**Learning:** Payment systems must use asynchronous server-to-server notifications (IPN/Webhooks) to securely confirm transaction status, as client-side redirects are untrustworthy.
+**Prevention:** Always provide and configure a secure notification URL that the payment gateway can use to send transaction results directly to the merchant's server.

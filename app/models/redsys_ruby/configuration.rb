@@ -5,7 +5,7 @@ module RedsysRuby
     include ActiveModel::Model
     include ActiveModel::Validations
 
-    attr_accessor :merchant_key, :merchant_code, :terminal, :environment
+    attr_accessor :merchant_key, :merchant_code, :terminal, :environment, :merchant_url
 
     validates :merchant_key, :merchant_code, :terminal, :environment, presence: true
     validates :merchant_code, format: { with: /\A\d{9}\z/, message: "debe tener exactamente 9 dígitos" }
@@ -28,6 +28,7 @@ module RedsysRuby
       key = ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"]
       code = ENV["REDSYS_MERCHANT_CODE"] || creds[:merchant_code] || config["merchant_code"]
       term = ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"]
+      m_url = ENV["REDSYS_MERCHANT_URL"] || creds[:merchant_url] || config["merchant_url"]
 
       if env == "test"
         key ||= "sq7HjmUOBfKmC576ILgskD5srU870gJ7"
@@ -39,7 +40,8 @@ module RedsysRuby
         merchant_key: key,
         merchant_code: code,
         terminal: term,
-        environment: env
+        environment: env,
+        merchant_url: m_url
       )
     end
 
@@ -72,7 +74,8 @@ module RedsysRuby
         "merchant_key" => merchant_key,
         "merchant_code" => merchant_code,
         "terminal" => terminal,
-        "environment" => environment
+        "environment" => environment,
+        "merchant_url" => merchant_url
       }
     end
 
