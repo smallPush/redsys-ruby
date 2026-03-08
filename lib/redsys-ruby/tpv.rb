@@ -84,7 +84,7 @@ module RedsysRuby
     end
 
     def secure_compare(a, b)
-      return false if a.empty? || b.empty? || a.bytesize != b.bytesize
+      return false if a.nil? || b.nil? || a.empty? || b.empty? || a.bytesize != b.bytesize
 
       OpenSSL.fixed_length_secure_compare(a, b)
     end

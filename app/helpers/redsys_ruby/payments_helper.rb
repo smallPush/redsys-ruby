@@ -2,7 +2,7 @@
 
 module RedsysRuby
   module PaymentsHelper
-    def redsys_payment_form(amount:, order: nil, description: nil, button_text: "Pagar con Redsys", button_class: "redsys-submit")
+    def redsys_payment_form(amount:, order: nil, description: nil, merchant_url: nil, button_text: "Pagar con Redsys", button_class: "redsys-submit")
       config = Configuration.load
       tpv = TPV.new(merchant_key: config.merchant_key)
 
@@ -15,7 +15,7 @@ module RedsysRuby
         Ds_Merchant_Currency: "978", # EUR
         Ds_Merchant_TransactionType: "0", # Autorización
         Ds_Merchant_Terminal: config.terminal,
-        Ds_Merchant_MerchantURL: "", # Should be configured or passed
+        Ds_Merchant_MerchantURL: merchant_url || config.merchant_url,
         Ds_Merchant_UrlOK: RedsysRuby::Engine.routes.url_helpers.ok_payments_url(host: request.base_url),
         Ds_Merchant_UrlKO: RedsysRuby::Engine.routes.url_helpers.ko_payments_url(host: request.base_url)
       }
