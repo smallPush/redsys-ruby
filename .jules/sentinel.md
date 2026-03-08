@@ -22,3 +22,8 @@
 **Vulnerability:** Rendering sensitive secrets in the 'value' attribute of a password input field allowed the cleartext secret to be retrieved from the page source.
 **Learning:** Even when using `password_field`, Rails may render the `value` attribute if explicitly provided, exposing the secret in the HTML source. Sensitive fields should never have their values pre-filled in the HTML.
 **Prevention:** Remove the `value` attribute from sensitive input fields to ensure they remain empty in the rendered HTML, relying on user input for updates.
+
+## 2026-02-21 - [Hardcoded Secrets in Source Code]
+**Vulnerability:** Hardcoded test credentials (merchant key, code, and terminal) were present in the `Configuration.load` method, potentially exposing them if the code is shared or accidentally used in production.
+**Learning:** Hardcoding any credentials, even for testing, is a security risk. All configuration should be externalized to environment variables or encrypted credentials.
+**Prevention:** Remove default hardcoded secrets from the source code and ensure the application correctly falls back to secure configuration sources.
