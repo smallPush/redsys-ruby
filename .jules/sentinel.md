@@ -27,3 +27,8 @@
 **Vulnerability:** Calling `.empty?` on `nil` parameters within `RedsysRuby::TPV#secure_compare` throws a `NoMethodError`, leading to an unhandled exception. An attacker could potentially cause a Denial-of-Service (DoS) by sending malformed requests with missing signature parameters that evaluate to `nil`.
 **Learning:** In Ruby, missing hash keys or intentionally omitted parameters can result in `nil` values being passed to internal methods. Before invoking String methods like `.empty?` or `.bytesize`, input variables must be validated against `nil` (e.g., `return false if a.nil? || b.nil?`).
 **Prevention:** Implement explicit `nil` checks early in validation or comparison routines, particularly those processing external input like signatures or payload parameters, to prevent application crashes.
+
+## 2026-02-20 - [Missing Notification URL Support]
+**Vulnerability:** The payment integration lacked support for a server-to-server notification URL (Ds_Merchant_MerchantURL), forcing reliance on client-side browser redirects for payment status updates, which can be manipulated or missed.
+**Learning:** Payment systems must use asynchronous server-to-server notifications (IPN/Webhooks) to securely confirm transaction status, as client-side redirects are untrustworthy.
+**Prevention:** Always provide and configure a secure notification URL that the payment gateway can use to send transaction results directly to the merchant's server.
