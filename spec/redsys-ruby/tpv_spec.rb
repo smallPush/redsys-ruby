@@ -96,6 +96,15 @@ RSpec.describe RedsysRuby::TPV do
       it "returns false for an invalid signature" do
         expect(tpv.valid_signature?(encoded_params, "invalid")).to be false
       end
+
+      it "returns false if the expected signature generated is nil due to some internal logic (though unlikely given Base64)" do
+        allow(tpv).to receive(:generate_merchant_signature_notif).and_return(nil)
+        expect(tpv.valid_signature?(encoded_params, signature)).to be false
+      end
+
+      it "returns false if the provided signature is nil" do
+        expect(tpv.valid_signature?(encoded_params, nil)).to be false
+      end
     end
 
     describe "#decode_parameters" do
