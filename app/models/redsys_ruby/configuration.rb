@@ -64,6 +64,7 @@ module RedsysRuby
 
       config_data[Rails.env] = data_to_save
       File.write(CONFIG_PATH, config_data.to_yaml)
+      self.class.clear_config_cache
       true
     end
 
@@ -77,9 +78,18 @@ module RedsysRuby
     end
 
     def self.load_config_file
-      return {} unless File.exist?(CONFIG_PATH)
+      return Marshal.load(Marshal.dump(@config_data)) if defined?(@config_data) && !@config_data.nil?
 
-      YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
+      @config_data = if File.exist?(CONFIG_PATH)
+                       YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
+                     else
+                       {}
+                     end
+      Marshal.load(Marshal.dump(@config_data))
+    end
+
+    def self.clear_config_cache
+      @config_data = nil
     end
     private_class_method :load_config_file
   end
