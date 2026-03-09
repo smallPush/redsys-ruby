@@ -30,12 +30,6 @@ module RedsysRuby
       term = ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"]
       m_url = ENV["REDSYS_MERCHANT_URL"] || creds[:merchant_url] || config["merchant_url"]
 
-      if env == "test"
-        key ||= "sq7HjmUOBfKmC576ILgskD5srU870gJ7"
-        code ||= "999008881"
-        term ||= "001"
-      end
-
       new(
         merchant_key: key,
         merchant_code: code,
