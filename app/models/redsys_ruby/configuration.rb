@@ -5,7 +5,7 @@ module RedsysRuby
     include ActiveModel::Model
     include ActiveModel::Validations
 
-    attr_accessor :merchant_key, :merchant_code, :terminal, :environment
+    attr_accessor :merchant_key, :merchant_code, :terminal, :environment, :merchant_url
 
     validates :merchant_key, :merchant_code, :terminal, :environment, presence: true
     validates :merchant_code, format: { with: /\A\d{9}\z/, message: "debe tener exactamente 9 dígitos" }
@@ -28,12 +28,14 @@ module RedsysRuby
       key = ENV["REDSYS_MERCHANT_KEY"] || creds[:merchant_key] || config["merchant_key"]
       code = ENV["REDSYS_MERCHANT_CODE"] || creds[:merchant_code] || config["merchant_code"]
       term = ENV["REDSYS_TERMINAL"] || creds[:terminal] || config["terminal"]
+      m_url = ENV["REDSYS_MERCHANT_URL"] || creds[:merchant_url] || config["merchant_url"]
 
       new(
         merchant_key: key,
         merchant_code: code,
         terminal: term,
-        environment: env
+        environment: env,
+        merchant_url: m_url
       )
     end
 
@@ -58,6 +60,7 @@ module RedsysRuby
 
       config_data[Rails.env] = data_to_save
       File.write(CONFIG_PATH, config_data.to_yaml)
+      self.class.clear_config_cache
       true
     end
 
@@ -66,14 +69,24 @@ module RedsysRuby
         "merchant_key" => merchant_key,
         "merchant_code" => merchant_code,
         "terminal" => terminal,
-        "environment" => environment
+        "environment" => environment,
+        "merchant_url" => merchant_url
       }
     end
 
     def self.load_config_file
-      return {} unless File.exist?(CONFIG_PATH)
+      return Marshal.load(Marshal.dump(@config_data)) if defined?(@config_data) && !@config_data.nil?
 
-      YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
+      @config_data = if File.exist?(CONFIG_PATH)
+                       YAML.safe_load_file(CONFIG_PATH, aliases: true) || {}
+                     else
+                       {}
+                     end
+      Marshal.load(Marshal.dump(@config_data))
+    end
+
+    def self.clear_config_cache
+      @config_data = nil
     end
     private_class_method :load_config_file
   end
