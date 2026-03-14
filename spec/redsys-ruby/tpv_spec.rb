@@ -8,6 +8,14 @@ RSpec.describe RedsysRuby::TPV do
   let(:merchant_key) { Base64.strict_encode64("a" * 32) }
   let(:tpv) { RedsysRuby::TPV.new(merchant_key: merchant_key) }
 
+  describe "#initialize" do
+    it "raises ArgumentError when merchant_key is missing or empty" do
+      expect { RedsysRuby::TPV.new(merchant_key: nil) }.to raise_error(ArgumentError, "merchant_key is required")
+      expect { RedsysRuby::TPV.new(merchant_key: "") }.to raise_error(ArgumentError, "merchant_key is required")
+      expect { RedsysRuby::TPV.new(merchant_key: "   ") }.to raise_error(ArgumentError, "merchant_key is required")
+    end
+  end
+
   describe "#encrypt_3des" do
     let(:merchant_key) { "sq7HjrUOBfKmC576ILgskD5srU870gJ7" }
     let(:decoded_key) { Base64.decode64(merchant_key) }
@@ -87,6 +95,15 @@ RSpec.describe RedsysRuby::TPV do
 
       it "returns false for an invalid signature" do
         expect(tpv.valid_signature?(encoded_params, "invalid")).to be false
+      end
+
+      it "returns false if the expected signature generated is nil due to some internal logic (though unlikely given Base64)" do
+        allow(tpv).to receive(:generate_merchant_signature_notif).and_return(nil)
+        expect(tpv.valid_signature?(encoded_params, signature)).to be false
+      end
+
+      it "returns false if the provided signature is nil" do
+        expect(tpv.valid_signature?(encoded_params, nil)).to be false
       end
     end
 

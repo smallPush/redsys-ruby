@@ -22,3 +22,17 @@
 **Vulnerability:** Rendering sensitive secrets in the 'value' attribute of a password input field allowed the cleartext secret to be retrieved from the page source.
 **Learning:** Even when using `password_field`, Rails may render the `value` attribute if explicitly provided, exposing the secret in the HTML source. Sensitive fields should never have their values pre-filled in the HTML.
 **Prevention:** Remove the `value` attribute from sensitive input fields to ensure they remain empty in the rendered HTML, relying on user input for updates.
+
+## 2026-02-21 - [Hardcoded Secrets in Source Code]
+**Vulnerability:** Hardcoded test credentials (merchant key, code, and terminal) were present in the `Configuration.load` method, potentially exposing them if the code is shared or accidentally used in production.
+**Learning:** Hardcoding any credentials, even for testing, is a security risk. All configuration should be externalized to environment variables or encrypted credentials.
+**Prevention:** Remove default hardcoded secrets from the source code and ensure the application correctly falls back to secure configuration sources.
+## 2024-05-24 - Unhandled Exception in Signature Validation
+**Vulnerability:** Calling `.empty?` on `nil` parameters within `RedsysRuby::TPV#secure_compare` throws a `NoMethodError`, leading to an unhandled exception. An attacker could potentially cause a Denial-of-Service (DoS) by sending malformed requests with missing signature parameters that evaluate to `nil`.
+**Learning:** In Ruby, missing hash keys or intentionally omitted parameters can result in `nil` values being passed to internal methods. Before invoking String methods like `.empty?` or `.bytesize`, input variables must be validated against `nil` (e.g., `return false if a.nil? || b.nil?`).
+**Prevention:** Implement explicit `nil` checks early in validation or comparison routines, particularly those processing external input like signatures or payload parameters, to prevent application crashes.
+
+## 2026-02-20 - [Missing Notification URL Support]
+**Vulnerability:** The payment integration lacked support for a server-to-server notification URL (Ds_Merchant_MerchantURL), forcing reliance on client-side browser redirects for payment status updates, which can be manipulated or missed.
+**Learning:** Payment systems must use asynchronous server-to-server notifications (IPN/Webhooks) to securely confirm transaction status, as client-side redirects are untrustworthy.
+**Prevention:** Always provide and configure a secure notification URL that the payment gateway can use to send transaction results directly to the merchant's server.

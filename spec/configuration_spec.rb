@@ -4,10 +4,13 @@ require "spec_helper"
 
 RSpec.describe RedsysRuby do
   describe ".configure" do
+    let!(:original_parent_controller) { RedsysRuby.parent_controller }
+    let!(:original_before_action) { RedsysRuby.before_configuration_action }
+
     after do
       # Reset configuration to defaults after each test
-      RedsysRuby.parent_controller = "ActionController::Base"
-      RedsysRuby.before_configuration_action = nil
+      RedsysRuby.parent_controller = original_parent_controller
+      RedsysRuby.before_configuration_action = original_before_action
     end
 
     it "yields the RedsysRuby module" do
@@ -31,7 +34,11 @@ RSpec.describe RedsysRuby do
 
     it "has default values" do
       expect(RedsysRuby.parent_controller).to eq("ActionController::Base")
-      expect(RedsysRuby.before_configuration_action).to be_nil
+      expect(RedsysRuby.before_configuration_action).to be_a(Proc)
+      expect { RedsysRuby.before_configuration_action.call }.to raise_error(
+        RedsysRuby::Error,
+        "Access denied. Please configure RedsysRuby.before_configuration_action."
+      )
     end
   end
 end
