@@ -1,4 +1,28 @@
-# frozen_string_literal: true
+require "rails"
+require "active_model"
+require "active_model/validations"
+
+# In a standard Rails engine setup, Rails.root is defined by the dummy app.
+# Since we are running tests isolated from a dummy app, we need to ensure
+# Rails.root is stubbed safely without polluting the global module namespace
+# permanently for other tests if they don't expect it.
+# We use a module prepended to Rails class singleton to provide a safe default.
+unless Rails.respond_to?(:root) && Rails.root
+  module Rails
+    def self.root
+      @root ||= Pathname.new(File.expand_path("../../dummy", __dir__))
+    end
+
+    def self.env
+      @env ||= ActiveSupport::StringInquirer.new("test")
+    end
+  end
+end
+
+# Load the model class manually
+
+
+  # frozen_string_literal: true
 
 require "spec_helper"
 require "active_model"
@@ -13,7 +37,7 @@ end
 
 require_relative "../../../app/models/redsys_ruby/configuration"
 
-RSpec.describe RedsysRuby::Configuration, type: :model do
+  RSpec.describe RedsysRuby::Configuration, type: :model do
   describe ".load" do
     let(:config) { described_class.load }
     let(:mock_credentials) { double("credentials") }
@@ -51,12 +75,12 @@ RSpec.describe RedsysRuby::Configuration, type: :model do
     end
 
     context "when all configuration sources are empty and env is test" do
-      it "returns a Configuration object with default test values" do
+      it "returns a Configuration object with nil values for missing configuration" do
         expect(config.environment).to eq("test")
-        expect(config.merchant_key).to eq("sq7HjmUOBfKmC576ILgskD5srU870gJ7")
-        expect(config.merchant_code).to eq("999008881")
-        expect(config.terminal).to eq("001")
-        expect(config).to be_valid
+        expect(config.merchant_key).to be_nil
+        expect(config.merchant_code).to be_nil
+        expect(config.terminal).to be_nil
+        expect(config).not_to be_valid
       end
     end
 
@@ -175,39 +199,28 @@ RSpec.describe RedsysRuby::Configuration, type: :model do
         expect(config.merchant_key).to eq("yaml_key")
         expect(config.merchant_code).to eq("111222333")
         expect(config.terminal).to eq("002")
-require "rails"
-require "active_model"
-require "active_model/validations"
-
-# In a standard Rails engine setup, Rails.root is defined by the dummy app.
-# Since we are running tests isolated from a dummy app, we need to ensure
-# Rails.root is stubbed safely without polluting the global module namespace
-# permanently for other tests if they don't expect it.
-# We use a module prepended to Rails class singleton to provide a safe default.
-unless Rails.respond_to?(:root) && Rails.root
-  module Rails
-    def self.root
-      @root ||= Pathname.new(File.expand_path("../../dummy", __dir__))
-    end
-
-    def self.env
-      @env ||= ActiveSupport::StringInquirer.new("test")
+      end
     end
   end
-end
 
-# Load the model class manually
-require_relative "../../../app/models/redsys_ruby/configuration"
 
-RSpec.describe RedsysRuby::Configuration, type: :model do
   describe "#save" do
+    let(:valid_attributes) do
+      {
+        merchant_key: "sq7HjmUOBfKmC576ILgskD5srU870gJ7",
+        merchant_code: "999008881",
+        terminal: "001",
+        environment: "test"
+      }
+    end
+
     let(:config) do
       described_class.new(
         merchant_key: "sq7HjmUOBfKmC576ILgskD5srU870gJ7",
         merchant_code: "999008881",
         terminal: "001",
         environment: "test"
-      }
+      )
     end
 
     it "is valid with valid attributes" do
@@ -236,15 +249,24 @@ RSpec.describe RedsysRuby::Configuration, type: :model do
   end
 
   describe "#attributes" do
+    let(:config) do
+      described_class.new(
+        merchant_key: "sq7HjmUOBfKmC576ILgskD5srU870gJ7",
+        merchant_code: "999008881",
+        terminal: "001",
+        environment: "test"
+      )
+    end
+
     it "returns a hash of the current attributes with string keys" do
       config = described_class.new(merchant_key: "key", merchant_code: "code", terminal: "term", environment: "test")
       expect(config.attributes).to eq({
         "merchant_key" => "key",
         "merchant_code" => "code",
         "terminal" => "term",
-        "environment" => "test"
+        "environment" => "test",
+        "merchant_url" => nil
       })
-      )
     end
 
     let(:config_path) { described_class::CONFIG_PATH }
@@ -278,7 +300,8 @@ RSpec.describe RedsysRuby::Configuration, type: :model do
           "test" => {
             "merchant_code" => "999008881",
             "terminal" => "001",
-            "environment" => "test"
+            "environment" => "test",
+            "merchant_url" => nil
           }
         }
 

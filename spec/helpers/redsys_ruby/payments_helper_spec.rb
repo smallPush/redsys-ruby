@@ -53,7 +53,8 @@ RSpec.describe RedsysRuby::PaymentsHelper do
       merchant_key: Base64.strict_encode64("a" * 32),
       merchant_code: "123456789",
       terminal: "001",
-      environment: "test"
+      environment: "test",
+      merchant_url: "http://example.com/notification"
     )
   end
 
